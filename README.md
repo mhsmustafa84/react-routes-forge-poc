@@ -24,8 +24,10 @@ src/
 │   ├── PostList.tsx      ← .build() multi-param + <Link>
 │   ├── PostDetail.tsx    ← useRouteParams + useResolvedPath() + hash
 │   ├── ProductList.tsx   ← multi-param .build() rendered as <Link>s
-│   ├── ProductDetail.tsx ← useRouteParams (2 params) + isActivePath
-│   ├── Search.tsx        ← build() with arrays, null-drop, strict mode, hash, round-trip read
+│   ├── ProductDetail.tsx ← useRouteParams(route) + isActivePath
+│   ├── FileList.tsx      ← splat (/*) .build({ "*": ... })
+│   ├── FileDetail.tsx    ← useRouteParams(PATHS.FILES.DETAILS) splat inference
+│   ├── Search.tsx        ← build() arrays, booleans, null-drop, extractQueryFromPath()
 │   ├── Profile.tsx       ← Optional param (:param?) demo
 │   ├── NotFound.tsx      ← catch-all `*` route
 │   └── RouteDebug.tsx    ← Live reference for every utility function
@@ -45,8 +47,10 @@ src/
 | `/posts` | PostList | Multi-param `.build()` + `<Link>` |
 | `/posts/:postId/comments/:commentId` | PostDetail | `useRouteParams` (2 params), `useResolvedPath()` with query + hash |
 | `/products` | ProductList | Multi-param `.build({ category, productId })` rendered as `<Link>`s |
-| `/products/:category/:productId` | ProductDetail | `useRouteParams` (2 params), `extractParamsFromPath()`, `isActivePath()` |
-| `/search` | Search | `build()` standalone, array queries, null-drop, strict mode, hash, round-trip read-back |
+| `/products/:category/:productId` | ProductDetail | `useRouteParams(PATHS.PRODUCTS.DETAILS)` inference, `extractParamsFromPath()`, `isActivePath()` |
+| `/files` | FileList | Splat route — `.build({ "*": "reports/2026/q1" })` |
+| `/files/*` | FileDetail | Splat param captured by `useRouteParams(PATHS.FILES.DETAILS)`, `useResolvedPath()` |
+| `/search` | Search | `build()` arrays, booleans, null-drop, strict mode, hash, `extractQueryFromPath()` read-back |
 | `/profile` | Profile | Optional `:param?` — no section defaults |
 | `/profile/:section?` | Profile | Optional param matched, `.build()` with section |
 | `/debug` | RouteDebug | **Live reference** for every export |
@@ -71,15 +75,18 @@ src/
 | `joinPaths(...segments)` | `RouteDebug` | Joins and normalizes path segments |
 | `getParamNames(template)` | `RouteDebug` | Lists `:param` names from a template string |
 | `flattenRoutes(routes)` | `RouteDebug` | Walks the PATHS tree → flat array (sitemaps, duplicate detection) |
-| `getBreadcrumbs(routes, path, opts?)` | `Breadcrumbs` component | Generates breadcrumb trail with resolved params |
+| `getBreadcrumbs(routes, path, opts?)` | `Breadcrumbs` component | Generates breadcrumb trail with resolved params (supports `labels` map) |
 | `matchPath(template)` | `RouteDebug` | Converts a template into an anchored RegExp |
-| `isDynamic(path)` | `RouteDebug` | Returns `true` if the path contains any `:param` |
+| `isDynamic(path)` | `RouteDebug` | Returns `true` if the path contains any `:param` or `/*` splat |
+| `appendQuery(path, query?, hash?)` | `RouteDebug` | Appends query params / hash to an existing path, preserving current ones |
+| `extractQueryFromPath(path, opts?)` | `Search`, `RouteDebug` | Parses a query string back into an object (`coerceBooleans` supported) |
+| `RouteTree` | `RouteDebug` | Type annotation for a plain route map passed to `defineRoutes()` |
 
 ### React hooks
 
 | Hook | Location | What |
 |---|---|---|
-| `useRouteParams<T>()` | `UserDetail`, `UserEdit`, `PostDetail`, `Profile` | Typed `useParams` — infer param names from the template string |
+| `useRouteParams<T>()` / `useRouteParams(route)` | Every detail page | Typed `useParams` — pass a template generic **or** a route from `PATHS` for inference |
 | `useNavigateTo()` | Almost every page + `App.tsx` nav | Typed `useNavigate` — accepts resolved path + `{ replace, state }` |
 | `useResolvedPath(template, params, query?, opts?)` | `PostDetail` | Resolves a path without navigating (supports splat/optional params via `generatePath`) |
 
@@ -88,11 +95,20 @@ src/
 | Feature | Where to see it |
 |---|---|
 | **Optional param segments** (`:param?`) | `Profile` page at `/profile/:section?` — matches both `/profile` and `/profile/settings` |
+| **Splat segments** (`/*`) | `FileList`/`FileDetail` at `/files/*` — captures the rest of the path into `*` |
+| **`useRouteParams(route)` inference** | Every detail page — params inferred from the `PATHS` route, no generic needed |
 | **Array query values** | `Search` page — `tags=["admin", "moderator"]` serialized as repeated keys |
+| **Boolean query values** | `Search` page — `{ active: true, draft: false }` → `?active=true&draft=false` |
 | **null/undefined query drop** | `Search` page — `filter: undefined, ref: null` silently removed from URL |
 | **Query on static paths** | `Search`, `RouteDebug` — `build(PATHS.USERS.ROOT, {}, { sort: "asc" })` |
 | **Strict mode** | `Search` (try/catch alert), `RouteDebug` (throws `RangeError`) |
 | **Hash fragments** | `PostDetail` (`#discussion`), `Search` (`#details`), `RouteDebug` |
+| **`appendQuery()`** | `RouteDebug` §13 — merge query params into an existing path/hash |
+| **`extractQueryFromPath()`** | `Search`, `RouteDebug` §14 — parse a query string back into an object |
+| **Case-insensitive `isActivePath()`** | `RouteDebug` §15 — `caseSensitive` option + trailing-slash tolerance |
+| **`RouteTree` type** | `RouteDebug` §16 — annotate a plain route map |
+| **Breadcrumb `labels` map** | `Breadcrumbs` component — overrides like `PRODUCTS.ROOT → "Shop"` |
+| **Route validation** | `paths.ts` — `defineRoutes()` warns on missing `/`, invalid params, duplicate paths (dev only) |
 | **String object gotcha** | `RouteDebug` §9 — `===` fails, `==` / `${}` / `String()` work |
 | **Custom labelResolver** | `Breadcrumbs` component — `BreadcrumbOptions.labelResolver` |
 
@@ -136,6 +152,10 @@ export const PATHS = defineRoutes({
     ROOT: "/profile",
     DETAILS: "/profile/:section?",  // optional param
   },
+  FILES: {
+    ROOT: "/files",
+    DETAILS: "/files/*",            // splat param
+  },
 } as const);
 ```
 
@@ -169,8 +189,10 @@ Built paths drop straight into react-router `<Link>`s (see `ProductList`):
 ### 4. Extract params from the URL
 
 ```tsx
-const { id } = useRouteParams<"/users/:id">();     // typed — no casting needed
+const { id } = useRouteParams(PATHS.USERS.DETAILS); // inferred from the PATHS route
+const { id } = useRouteParams<"/users/:id">();       // …or from a template generic
 const params = extractParamsFromPath("/users/:id", "/users/42"); // { id: "42" }
+const splat = useRouteParams(PATHS.FILES.DETAILS);   // { "*": "a/b/c" }
 ```
 
 ### 5. Add query strings to any path

@@ -3,12 +3,16 @@ import {
   joinPaths,
   getParamNames,
   extractParamsFromPath,
+  extractQueryFromPath,
   matchPath,
   build,
   buildPath,
   extractParamNames,
+  appendQuery,
   isDynamic,
+  isActivePath,
 } from "react-routes-forge";
+import type { RouteTree } from "react-routes-forge";
 import { PATHS } from "../paths";
 
 const DEMO_JOIN = [
@@ -69,6 +73,42 @@ const DEMO_MATCH = [
   { label: 'matchPath("/users/:id").exec("/users/42")', result: JSON.stringify(matchPath("/users/:id").exec("/users/42")?.slice(1) ?? []) },
   { label: 'matchPath("/posts/:postId/comments/:commentId").exec("/posts/7/comments/99")', result: JSON.stringify(matchPath("/posts/:postId/comments/:commentId").exec("/posts/7/comments/99")?.slice(1) ?? []) },
 ];
+
+const DEMO_SPLAT = [
+  { label: 'build("/files/*", { "*": "reports/2026/q1" })', result: build("/files/*", { "*": "reports/2026/q1" }) },
+  { label: 'build("/files/*", { "*": "a b/c?d" })', result: build("/files/*", { "*": "a b/c?d" }) },
+  { label: 'build("/files/*", {}) (splat dropped)', result: build("/files/*", {}) },
+  { label: 'extractParamsFromPath("/files/*", "/files/a/b")', result: JSON.stringify(extractParamsFromPath("/files/*", "/files/a/b")) },
+  { label: 'isActivePath("/files/a/b/c", "/files/*")', result: String(isActivePath("/files/a/b/c", "/files/*")) },
+  { label: 'isDynamic("/files/*")', result: String(isDynamic("/files/*")) },
+  { label: 'getParamNames("/files/*")', result: JSON.stringify(getParamNames("/files/*")) },
+];
+
+const DEMO_APPEND_QUERY = [
+  { label: 'appendQuery("/users?tab=list", { page: 2 })', result: appendQuery("/users?tab=list", { page: 2 }) },
+  { label: 'appendQuery("/users#top", { tab: "list" })', result: appendQuery("/users#top", { tab: "list" }) },
+  { label: 'appendQuery("/users", { active: true })', result: appendQuery("/users", { active: true }) },
+  { label: 'appendQuery("/users", { tag: ["a", "b"] })', result: appendQuery("/users", { tag: ["a", "b"] }) },
+];
+
+const DEMO_EXTRACT_QUERY = [
+  { label: 'extractQueryFromPath("/users/42?tab=profile&tag=a&tag=b")', result: JSON.stringify(extractQueryFromPath("/users/42?tab=profile&tag=a&tag=b")) },
+  { label: 'extractQueryFromPath("/search?active=true", { coerceBooleans: true })', result: JSON.stringify(extractQueryFromPath("/search?active=true", { coerceBooleans: true })) },
+  { label: 'extractQueryFromPath("/plain")', result: JSON.stringify(extractQueryFromPath("/plain")) },
+];
+
+const DEMO_ACTIVE = [
+  { label: 'isActivePath("/Users/42", "/users/:id")', result: String(isActivePath("/Users/42", "/users/:id")) },
+  { label: 'isActivePath("/Users/42", "/users/:id", { caseSensitive: true })', result: String(isActivePath("/Users/42", "/users/:id", { caseSensitive: true })) },
+  { label: 'isActivePath("/users/42/", "/users/:id")', result: String(isActivePath("/users/42/", "/users/:id")) },
+  { label: 'isActivePath("/users", "/users/:id")', result: String(isActivePath("/users", "/users/:id")) },
+  { label: 'isActivePath("/users", "/users/:id", { exact: false })', result: String(isActivePath("/users", "/users/:id", { exact: false })) },
+];
+
+const DEMO_ROUTE_TREE: RouteTree = {
+  HOME: "/",
+  USERS: { ROOT: "/users", EDIT: "/users/edit/:id" },
+};
 
 export default function RouteDebug() {
   const flat = flattenRoutes(PATHS);
@@ -246,8 +286,79 @@ export default function RouteDebug() {
                 <td><code>build("/users/:id", &#123; id: 5 &#125;, &#123; tab: "info" &#125;, &#123; hash: "details" &#125;)</code></td>
                 <td><code>{build("/users/:id", { id: 5 }, { tab: "info" }, { hash: "details" })}</code></td>
               </tr>
+              <tr>
+                <td><code>build("/search", &#123;&#125;, &#123; active: true, draft: false &#125;)</code></td>
+                <td><code>{build("/search", {}, { active: true, draft: false })}</code></td>
+              </tr>
             </tbody>
           </table>
+        </>,
+      )}
+
+      {section(
+        "12. Splat (`/*`) segments",
+        <>
+          <p className="note">
+            A trailing <code>/*</code> captures the rest of the path into a
+            single <code>{"*"}</code> param. Slashes are preserved, other
+            special characters are encoded, and a missing splat value drops the
+            suffix. Try the <em>Files</em> page.
+          </p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_SPLAT.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
+            </tbody>
+          </table>
+        </>,
+      )}
+
+      {section(
+        "13. appendQuery() — merge query params into an existing path",
+        <table className="debug-table">
+          <thead><tr><th>Call</th><th>Result</th></tr></thead>
+          <tbody>
+            {DEMO_APPEND_QUERY.map((d) => (
+              <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+            ))}
+          </tbody>
+        </table>,
+      )}
+
+      {section(
+        "14. extractQueryFromPath() — parse a query string back into an object",
+        <table className="debug-table">
+          <thead><tr><th>Call</th><th>Result</th></tr></thead>
+          <tbody>
+            {DEMO_EXTRACT_QUERY.map((d) => (
+              <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+            ))}
+          </tbody>
+        </table>,
+      )}
+
+      {section(
+        "15. isActivePath() — NavLink-style matching (case-insensitive, trailing slash)",
+        <table className="debug-table">
+          <thead><tr><th>Call</th><th>Result</th></tr></thead>
+          <tbody>
+            {DEMO_ACTIVE.map((d) => (
+              <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+            ))}
+          </tbody>
+        </table>,
+      )}
+
+      {section(
+        "16. RouteTree type — annotate a plain route map",
+        <>
+          <p className="note">
+            <code>RouteTree</code> types a plain object for <code>defineRoutes()</code>:
+            each key is a path string or a nested tree.
+          </p>
+          <pre className="debug-json">{JSON.stringify(DEMO_ROUTE_TREE, null, 2)}</pre>
         </>,
       )}
     </div>
