@@ -6,8 +6,8 @@ import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="react-routes-forge-poc">
       <App />
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );
