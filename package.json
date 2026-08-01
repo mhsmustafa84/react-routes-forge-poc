@@ -13,7 +13,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",
-    "react-routes-forge": "file:../react-routes-forge"
+    "react-routes-forge": "^1.3.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",
