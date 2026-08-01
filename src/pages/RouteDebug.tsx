@@ -11,6 +11,7 @@ import {
   appendQuery,
   isDynamic,
   isActivePath,
+  clearPathCache,
 } from "react-routes-forge";
 import type { RouteTree } from "react-routes-forge";
 import { PATHS } from "../paths";
@@ -103,6 +104,32 @@ const DEMO_ACTIVE = [
   { label: 'isActivePath("/users/42/", "/users/:id")', result: String(isActivePath("/users/42/", "/users/:id")) },
   { label: 'isActivePath("/users", "/users/:id")', result: String(isActivePath("/users", "/users/:id")) },
   { label: 'isActivePath("/users", "/users/:id", { exact: false })', result: String(isActivePath("/users", "/users/:id", { exact: false })) },
+  { label: 'isActivePath("/users", "/users/") (template trailing slash)', result: String(isActivePath("/users", "/users/")) },
+];
+
+const DEMO_SUFFIX = [
+  { label: 'getParamNames("/files/:name.json")', result: JSON.stringify(getParamNames("/files/:name.json")) },
+  { label: 'build("/files/:name.json", { name: "report" })', result: build("/files/:name.json", { name: "report" }) },
+  { label: 'isActivePath("/files/report.json", "/files/:name.json")', result: String(isActivePath("/files/report.json", "/files/:name.json")) },
+  { label: 'extractParamsFromPath("/files/:name.json", "/files/report.json")', result: JSON.stringify(extractParamsFromPath("/files/:name.json", "/files/report.json")) },
+  { label: 'build("/files/:name", { name: "report.json" })', result: build("/files/:name", { name: "report.json" }) },
+  { label: 'buildPath("/files/:name.json", { name: "report" }, undefined, { strict: true })', result: buildPath("/files/:name.json", { name: "report" }, undefined, { strict: true }) },
+];
+
+const DEMO_MATCH_OPTIONS = [
+  { label: 'matchPath("/users/:id", { end: false }).test("/users/42/posts")', result: String(matchPath("/users/:id", { end: false }).test("/users/42/posts")) },
+  { label: 'matchPath("/users/:id", { end: false }).test("/users/42")', result: String(matchPath("/users/:id", { end: false }).test("/users/42")) },
+  { label: 'matchPath("/Users", { caseSensitive: true }).test("/users")', result: String(matchPath("/Users", { caseSensitive: true }).test("/users")) },
+  { label: 'matchPath("/Users").test("/users")', result: String(matchPath("/Users").test("/users")) },
+];
+
+const DEMO_STATIC_BUILD = [
+  { label: 'PATHS.HOME.build()', result: PATHS.HOME.build() },
+  { label: 'PATHS.SEARCH.build({ q: "react", page: 1 })', result: PATHS.SEARCH.build({ q: "react", page: 1 }) },
+  { label: 'PATHS.FILES.ROOT.build({ sort: "name" })', result: PATHS.FILES.ROOT.build({ sort: "name" }) },
+  { label: 'typeof PATHS.HOME', result: JSON.stringify(typeof PATHS.HOME) },
+  { label: 'PATHS.HOME == "/"', result: String(PATHS.HOME == "/") },
+  { label: 'clearPathCache()', result: "cleared caches" },
 ];
 
 const DEMO_ROUTE_TREE: RouteTree = {
@@ -179,14 +206,25 @@ export default function RouteDebug() {
 
       {section(
         "5. matchPath() — Template to RegExp",
-        <table className="debug-table">
-          <thead><tr><th>Call</th><th>Result</th></tr></thead>
-          <tbody>
-            {DEMO_MATCH.map((d) => (
-              <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
-            ))}
-          </tbody>
-        </table>,
+        <>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_MATCH.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="note">Options: <code>end</code> (exact match, default true) and <code>caseSensitive</code> (default false).</p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_MATCH_OPTIONS.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
+            </tbody>
+          </table>
+        </>,
       )}
 
       {section(
@@ -359,6 +397,47 @@ export default function RouteDebug() {
             each key is a path string or a nested tree.
           </p>
           <pre className="debug-json">{JSON.stringify(DEMO_ROUTE_TREE, null, 2)}</pre>
+        </>,
+      )}
+
+      {section(
+        "17. Static suffix params — :name.json",
+        <>
+          <p className="note">
+            Param names are restricted to <code>[A-Za-z0-9_]</code> (matching
+            React Router), so a static suffix stays a literal —{" "}
+            <code>/files/:name.json</code> extracts <code>name</code>, leaving{" "}
+            <code>.json</code> untouched.
+          </p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_SUFFIX.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
+            </tbody>
+          </table>
+        </>,
+      )}
+
+      {section(
+        "18. Static routes now have .build() — query/hash only",
+        <>
+          <p className="note">
+            Every route gets a <code>.build()</code> helper. Static routes take
+            a query object (no params); dynamic routes take params. Both are{" "}
+            <code>String</code> objects, so compare with <code>==</code> or{" "}
+            <code>String()</code>.
+          </p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_STATIC_BUILD.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
+            </tbody>
+          </table>
+          <button onClick={() => clearPathCache()}>Clear path cache</button>
         </>,
       )}
     </div>

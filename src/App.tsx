@@ -1,6 +1,5 @@
-import { Routes, Route, useLocation } from "react-router-dom";
-import { isActivePath } from "react-routes-forge";
-import { useNavigateTo } from "react-routes-forge/hooks";
+import { Routes, Route } from "react-router-dom";
+import { useNavigateTo, useActivePath } from "react-routes-forge/hooks";
 import { PATHS } from "./paths";
 import Home from "./pages/Home";
 import UserList from "./pages/UserList";
@@ -20,32 +19,34 @@ import NotFound from "./pages/NotFound";
 import Breadcrumbs from "./components/Breadcrumbs";
 import "./App.css";
 
-function NavBar() {
-  const location = useLocation();
+function NavButton({ label, path }: { label: string; path: string }) {
   const navigate = useNavigateTo();
+  const active = useActivePath(path, { exact: false });
 
-  const link = (label: string, path: string) => (
-    <button
-      key={path}
-      className={
-        isActivePath(location.pathname, path, { exact: false }) ? "active" : ""
-      }
-      onClick={() => navigate(path)}
-    >
+  return (
+    <button className={active ? "active" : ""} onClick={() => navigate(path)}>
       {label}
     </button>
   );
+}
+
+function NavBar() {
+  const items: [string, string][] = [
+    ["Home", PATHS.HOME],
+    ["Users", PATHS.USERS.ROOT],
+    ["Posts", PATHS.POSTS.ROOT],
+    ["Products", PATHS.PRODUCTS.ROOT],
+    ["Files", PATHS.FILES.ROOT],
+    ["Search", PATHS.SEARCH],
+    ["Profile", PATHS.PROFILE.ROOT],
+    ["Debug", PATHS.DEBUG],
+  ];
 
   return (
     <nav className="navbar" aria-label="Primary">
-      {link("Home", PATHS.HOME)}
-      {link("Users", PATHS.USERS.ROOT)}
-      {link("Posts", PATHS.POSTS.ROOT)}
-      {link("Products", PATHS.PRODUCTS.ROOT)}
-      {link("Files", PATHS.FILES.ROOT)}
-      {link("Search", PATHS.SEARCH)}
-      {link("Profile", PATHS.PROFILE.ROOT)}
-      {link("Debug", PATHS.DEBUG)}
+      {items.map(([label, path]) => (
+        <NavButton key={path} label={label} path={path} />
+      ))}
     </nav>
   );
 }

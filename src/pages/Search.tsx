@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { build, isActivePath, extractQueryFromPath } from "react-routes-forge";
 import type { QueryParams } from "react-routes-forge";
-import { useNavigateTo } from "react-routes-forge/hooks";
+import { useNavigateTo, useTypedSearchParams } from "react-routes-forge/hooks";
 import { useLocation } from "react-router-dom";
 import { PATHS } from "../paths";
 
@@ -50,6 +50,15 @@ export default function Search() {
   const parsed = extractQueryFromPath(location.search);
   const parsedCoerced = extractQueryFromPath(location.search, {
     coerceBooleans: true,
+  });
+  const parsedTyped = extractQueryFromPath(location.search, {
+    coerceBooleans: true,
+    coerceNumbers: true,
+  });
+
+  const [typedQuery, setTypedQuery] = useTypedSearchParams({
+    coerceBooleans: true,
+    coerceNumbers: true,
   });
 
   const toggleTag = (tag: string) =>
@@ -188,6 +197,13 @@ export default function Search() {
         <p className="search-label">Built URL (live)</p>
         <pre className="url-preview">{url}</pre>
         <button onClick={clear}>Clear query params</button>
+        <button
+          onClick={() =>
+            setTypedQuery({ q: "typed", page: 2, active: true }, { replace: true })
+          }
+        >
+          setTypedQuery(&#123; q: "typed", page: 2, active: true &#125;)
+        </button>
       </section>
 
       <section className="debug-section" aria-label="Read back">
@@ -218,13 +234,26 @@ export default function Search() {
             </tr>
             <tr>
               <td>
-                <code>
-                  extractQueryFromPath(location.search, &#123; coerceBooleans:
-                  true &#125;)
-                </code>
+                <code>extractQueryFromPath(location.search, &#123; coerceBooleans: true &#125;)</code>
               </td>
               <td>
                 <code>{JSON.stringify(parsedCoerced)}</code>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <code>extractQueryFromPath(location.search, &#123; coerceBooleans: true, coerceNumbers: true &#125;)</code>
+              </td>
+              <td>
+                <code>{JSON.stringify(parsedTyped)}</code>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <code>useTypedSearchParams(&#123; coerceBooleans: true, coerceNumbers: true &#125;)[0]</code>
+              </td>
+              <td>
+                <code>{JSON.stringify(typedQuery)}</code>
               </td>
             </tr>
           </tbody>
