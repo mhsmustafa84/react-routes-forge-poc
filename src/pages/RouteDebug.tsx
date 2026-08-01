@@ -12,8 +12,10 @@ import {
   isDynamic,
   isActivePath,
   clearPathCache,
+  devWarn,
 } from "react-routes-forge";
 import type { RouteTree } from "react-routes-forge";
+import { useResolvedPath } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 const DEMO_JOIN = [
@@ -139,6 +141,10 @@ const DEMO_ROUTE_TREE: RouteTree = {
 
 export default function RouteDebug() {
   const flat = flattenRoutes(PATHS);
+  const resolvedExample = useResolvedPath(PATHS.POSTS.DETAILS, {
+    postId: 7,
+    commentId: 42,
+  });
   const paths = flat.map((r) => r.path);
   const dupes = paths.filter((p, i) => paths.indexOf(p) !== i);
 
@@ -438,6 +444,36 @@ export default function RouteDebug() {
             </tbody>
           </table>
           <button onClick={() => clearPathCache()}>Clear path cache</button>
+          <button
+            onClick={() =>
+              devWarn("devWarn() demo — this only shows outside production")
+            }
+          >
+            Trigger devWarn()
+          </button>
+        </>,
+      )}
+
+      {section(
+        "19. useResolvedPath() — resolve a template against params",
+        <>
+          <p className="note">
+            <code>useResolvedPath(template, params)</code> mirrors{" "}
+            <code>buildPath()</code> as a hook. See also{" "}
+            <code>useActivePath()</code> (nav highlighting) and{" "}
+            <code>useTypedSearchParams()</code> (Search page).
+          </p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>
+                  <code>useResolvedPath(PATHS.POSTS.DETAILS, &#123; postId: 7, commentId: 42 &#125;)</code>
+                </td>
+                <td><code>{resolvedExample}</code></td>
+              </tr>
+            </tbody>
+          </table>
         </>,
       )}
     </div>
