@@ -5,6 +5,12 @@ import { useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 const labelOptions: BreadcrumbOptions = {
+  labels: {
+    "PRODUCTS.ROOT": "Shop",
+    "PRODUCTS.DETAILS": "Item",
+    "FILES.DETAILS": "File",
+    "POSTS.DETAILS": "Comment",
+  },
   labelResolver: (key) => {
     const parts = key.split(".");
     const last = parts[parts.length - 1]!;

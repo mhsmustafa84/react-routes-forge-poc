@@ -1,14 +1,17 @@
-import { build, isActivePath } from "react-routes-forge";
+import { build, isActivePath, extractQueryFromPath } from "react-routes-forge";
 import { useNavigateTo } from "react-routes-forge/hooks";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { PATHS } from "../paths";
 
 export default function Search() {
   const navigate = useNavigateTo();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
 
   const isSearchActive = isActivePath(location.pathname, PATHS.SEARCH);
+  const parsed = extractQueryFromPath(location.search);
+  const parsedCoerced = extractQueryFromPath(location.search, {
+    coerceBooleans: true,
+  });
 
   const handleStrictMode = () => {
     try {
@@ -54,6 +57,15 @@ export default function Search() {
         Search "hello" (null/undefined params dropped)
       </button>
 
+      <h3>Query string — boolean values serialize to "true"/"false"</h3>
+      <button
+        onClick={() =>
+          navigate(build(PATHS.SEARCH, {}, { active: true, draft: false }))
+        }
+      >
+        Search with active=true&draft=false
+      </button>
+
       <h3>Strict mode — RangeError on missing param</h3>
       <button onClick={handleStrictMode}>
         Trigger strict mode (missing :id)
@@ -75,23 +87,33 @@ export default function Search() {
         Navigate to /users/7?tab=info#details
       </button>
 
-      <h3>Reading query params back from the URL</h3>
+      <h3>Reading query params back with extractQueryFromPath()</h3>
       <p className="note">
         The buttons above build query strings with <code>build()</code> and
-        navigate to them. <code>useSearchParams</code> (react-router) reads them
-        back — proving the round trip.
+        navigate to them. <code>extractQueryFromPath()</code> (from
+        react-routes-forge) parses the current URL back into an object —
+        proving the round trip.
       </p>
-      {searchParams.size === 0 ? (
+      {Object.keys(parsed).length === 0 ? (
         <p className="note">No query params in the current URL yet.</p>
       ) : (
         <ul>
-          {[...searchParams.entries()].map(([key, value]) => (
-            <li key={`${key}=${value}`}>
-              <code>{key}</code> = <code>{value}</code>
+          {Object.entries(parsed).map(([key, value]) => (
+            <li key={key}>
+              <code>{key}</code> ={" "}
+              <code>
+                {typeof value === "string"
+                  ? value
+                  : JSON.stringify(value)}
+              </code>
             </li>
           ))}
         </ul>
       )}
+      <p className="note">
+        With <code>{"{ coerceBooleans: true }"}</code>:{" "}
+        <code>{JSON.stringify(parsedCoerced)}</code>
+      </p>
       <button onClick={() => navigate(PATHS.SEARCH)}>Clear query params</button>
     </div>
   );
