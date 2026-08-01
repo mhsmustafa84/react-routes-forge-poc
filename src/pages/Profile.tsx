@@ -4,7 +4,7 @@ import { useRouteParams, useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function Profile() {
-  const params = useRouteParams<"/profile/:section?">();
+  const params = useRouteParams(PATHS.PROFILE.DETAILS);
   const navigate = useNavigateTo();
   const location = useLocation();
 

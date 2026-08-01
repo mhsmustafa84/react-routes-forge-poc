@@ -3,7 +3,7 @@ import { useNavigateTo, useRouteParams } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function UserDetail() {
-  const { id } = useRouteParams<"/users/:id">();
+  const { id } = useRouteParams(PATHS.USERS.DETAILS);
   const navigateTo = useNavigateTo();
 
   const extracted = extractParamsFromPath("/users/:id", `/users/${id}`);

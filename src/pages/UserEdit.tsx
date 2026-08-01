@@ -2,7 +2,7 @@ import { useNavigateTo, useRouteParams } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function UserEdit() {
-  const { id } = useRouteParams<"/users/edit/:id">();
+  const { id } = useRouteParams(PATHS.USERS.EDIT);
   const navigate = useNavigateTo();
 
   return (

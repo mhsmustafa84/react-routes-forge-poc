@@ -6,8 +6,7 @@ import { PATHS } from "../paths";
 
 export default function ProductDetail() {
   const location = useLocation();
-  const { category, productId } =
-    useRouteParams<"/products/:category/:productId">();
+  const { category, productId } = useRouteParams(PATHS.PRODUCTS.DETAILS);
   const extracted = extractParamsFromPath(
     "/products/:category/:productId",
     location.pathname,
