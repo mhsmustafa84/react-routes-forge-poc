@@ -14,6 +14,11 @@ export const PATHS = defineRoutes({
   },
   SEARCH: "/search",
   DEBUG: "/debug",
+  FILES: {
+    ROOT: "/files",
+    /** Splat route — captures the rest of the path (including `/`) into `*`. */
+    DETAILS: "/files/*",
+  },
   PRODUCTS: {
     ROOT: "/products",
     DETAILS: "/products/:category/:productId",

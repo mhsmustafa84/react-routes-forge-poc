@@ -11,6 +11,8 @@ import PostList from "./pages/PostList";
 import PostDetail from "./pages/PostDetail";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
+import FileList from "./pages/FileList";
+import FileDetail from "./pages/FileDetail";
 import Search from "./pages/Search";
 import RouteDebug from "./pages/RouteDebug";
 import Profile from "./pages/Profile";
@@ -40,6 +42,7 @@ function NavBar() {
       {link("Users", PATHS.USERS.ROOT)}
       {link("Posts", PATHS.POSTS.ROOT)}
       {link("Products", PATHS.PRODUCTS.ROOT)}
+      {link("Files", PATHS.FILES.ROOT)}
       {link("Search", PATHS.SEARCH)}
       {link("Profile", PATHS.PROFILE.ROOT)}
       {link("Debug", PATHS.DEBUG)}
@@ -63,6 +66,8 @@ function App() {
           <Route path={PATHS.POSTS.DETAILS} element={<PostDetail />} />
           <Route path={PATHS.PRODUCTS.ROOT} element={<ProductList />} />
           <Route path={PATHS.PRODUCTS.DETAILS} element={<ProductDetail />} />
+          <Route path={PATHS.FILES.ROOT} element={<FileList />} />
+          <Route path={PATHS.FILES.DETAILS} element={<FileDetail />} />
           <Route path={PATHS.SEARCH} element={<Search />} />
           <Route path={PATHS.PROFILE.ROOT} element={<Profile />} />
           <Route path={PATHS.PROFILE.DETAILS} element={<Profile />} />
