@@ -1,4 +1,5 @@
-import { build, isActivePath, useNavigateTo } from "react-routes-forge";
+import { build, isActivePath } from "react-routes-forge";
+import { useNavigateTo } from "react-routes-forge/hooks";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { PATHS } from "../paths";
 
@@ -26,7 +27,13 @@ export default function Search() {
       <h3>Query string — array values</h3>
       <button
         onClick={() =>
-          navigate(build(PATHS.SEARCH, {}, { q: "react", tags: ["admin", "moderator"] }))
+          navigate(
+            build(
+              PATHS.SEARCH,
+              {},
+              { q: "react", tags: ["admin", "moderator"] },
+            ),
+          )
         }
       >
         Search "react" with tags=admin&tags=moderator
@@ -35,7 +42,13 @@ export default function Search() {
       <h3>Query string — null/undefined values are dropped</h3>
       <button
         onClick={() =>
-          navigate(build(PATHS.SEARCH, {}, { q: "hello", sort: "asc", filter: undefined, ref: null }))
+          navigate(
+            build(
+              PATHS.SEARCH,
+              {},
+              { q: "hello", sort: "asc", filter: undefined, ref: null },
+            ),
+          )
         }
       >
         Search "hello" (null/undefined params dropped)
@@ -49,7 +62,14 @@ export default function Search() {
       <h3>Hash fragment</h3>
       <button
         onClick={() =>
-          navigate(build("/users/:id", { id: 7 }, { tab: "info" }, { hash: "details" }))
+          navigate(
+            build(
+              "/users/:id",
+              { id: 7 },
+              { tab: "info" },
+              { hash: "details" },
+            ),
+          )
         }
       >
         Navigate to /users/7?tab=info#details
@@ -58,8 +78,8 @@ export default function Search() {
       <h3>Reading query params back from the URL</h3>
       <p className="note">
         The buttons above build query strings with <code>build()</code> and
-        navigate to them. <code>useSearchParams</code> (react-router) reads
-        them back — proving the round trip.
+        navigate to them. <code>useSearchParams</code> (react-router) reads them
+        back — proving the round trip.
       </p>
       {searchParams.size === 0 ? (
         <p className="note">No query params in the current URL yet.</p>

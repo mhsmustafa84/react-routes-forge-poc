@@ -1,4 +1,4 @@
-import { useNavigateTo, useRouteParams } from "react-routes-forge";
+import { useNavigateTo, useRouteParams } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function UserEdit() {

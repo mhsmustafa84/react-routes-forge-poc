@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useNavigateTo } from "react-routes-forge";
+import { useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function UserList() {
@@ -10,8 +10,8 @@ export default function UserList() {
       <h1>Users</h1>
       <p>
         Dynamic route param names:{" "}
-        <code>{JSON.stringify(PATHS.USERS.EDIT.paramNames)}</code>{" "}
-        (from <code>PATHS.USERS.EDIT.paramNames</code>)
+        <code>{JSON.stringify(PATHS.USERS.EDIT.paramNames)}</code> (from{" "}
+        <code>PATHS.USERS.EDIT.paramNames</code>)
       </p>
       <button onClick={() => navigate(PATHS.USERS.ADD)}>Add User</button>
       <button onClick={() => navigate(PATHS.USERS.DETAILS.build({ id: 1 }))}>

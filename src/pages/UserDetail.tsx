@@ -1,4 +1,5 @@
-import { useRouteParams, useNavigateTo, extractParamsFromPath } from "react-routes-forge";
+import { extractParamsFromPath } from "react-routes-forge";
+import { useNavigateTo, useRouteParams } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function UserDetail() {
@@ -15,11 +16,15 @@ export default function UserDetail() {
         Param extracted via <code>extractParamsFromPath()</code>:{" "}
         <code>{JSON.stringify(extracted)}</code>
       </p>
-      <button onClick={() => navigateTo(PATHS.USERS.EDIT.build({ id: Number(id) }))}>
+      <button
+        onClick={() => navigateTo(PATHS.USERS.EDIT.build({ id: Number(id) }))}
+      >
         Edit
       </button>
       <br />
-      <button onClick={() => navigateTo(PATHS.USERS.ROOT)}>Back to Users</button>
+      <button onClick={() => navigateTo(PATHS.USERS.ROOT)}>
+        Back to Users
+      </button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import { isActivePath, useNavigateTo } from "react-routes-forge";
+import { isActivePath } from "react-routes-forge";
+import { useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "./paths";
 import Home from "./pages/Home";
 import UserList from "./pages/UserList";
@@ -24,7 +25,9 @@ function NavBar() {
   const link = (label: string, path: string) => (
     <button
       key={path}
-      className={isActivePath(location.pathname, path, { exact: false }) ? "active" : ""}
+      className={
+        isActivePath(location.pathname, path, { exact: false }) ? "active" : ""
+      }
       onClick={() => navigate(path)}
     >
       {label}

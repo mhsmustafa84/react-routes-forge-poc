@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigateTo } from "react-routes-forge";
+import { useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function AddUser() {
@@ -10,7 +10,8 @@ export default function AddUser() {
     <div>
       <h1>Add User</h1>
       <p>
-        Static route under the <code>USERS</code> group: <code>{PATHS.USERS.ADD}</code>
+        Static route under the <code>USERS</code> group:{" "}
+        <code>{PATHS.USERS.ADD}</code>
       </p>
       <label>
         New user name:{" "}

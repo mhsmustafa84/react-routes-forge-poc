@@ -1,8 +1,13 @@
-import { useNavigateTo, useRouteParams, useResolvedPath } from "react-routes-forge";
+import {
+  useNavigateTo,
+  useRouteParams,
+  useResolvedPath,
+} from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function PostDetail() {
-  const { postId, commentId } = useRouteParams<"/posts/:postId/comments/:commentId">();
+  const { postId, commentId } =
+    useRouteParams<"/posts/:postId/comments/:commentId">();
   const navigate = useNavigateTo();
   const resolvedUrl = useResolvedPath(
     "/posts/:postId/comments/:commentId",

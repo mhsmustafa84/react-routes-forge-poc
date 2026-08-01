@@ -1,4 +1,4 @@
-import { useNavigateTo } from "react-routes-forge";
+import { useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
 
 export default function NotFound() {

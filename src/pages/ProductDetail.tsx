@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
-import {
-  useRouteParams,
-  isActivePath,
-  extractParamsFromPath,
-} from "react-routes-forge";
+import { isActivePath, extractParamsFromPath } from "react-routes-forge";
+import { useRouteParams } from "react-routes-forge/hooks";
 import { useLocation } from "react-router-dom";
 import { PATHS } from "../paths";
 
@@ -15,11 +12,9 @@ export default function ProductDetail() {
     "/products/:category/:productId",
     location.pathname,
   );
-  const isActive = isActivePath(
-    location.pathname,
-    PATHS.PRODUCTS.DETAILS,
-    { exact: true },
-  );
+  const isActive = isActivePath(location.pathname, PATHS.PRODUCTS.DETAILS, {
+    exact: true,
+  });
 
   return (
     <div>
