@@ -6,7 +6,7 @@ import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="react-routes-forge-poc">
+    <BrowserRouter basename="/react-routes-forge-poc">
       <App />
     </BrowserRouter>
   </StrictMode>,
