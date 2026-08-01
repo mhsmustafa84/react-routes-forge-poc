@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useNavigateTo } from "react-routes-forge";
 import { PATHS } from "../paths";
 
@@ -12,8 +13,14 @@ export default function PostList() {
           navigate(PATHS.POSTS.DETAILS.build({ postId: 5, commentId: 12 }))
         }
       >
-        View Post 5, Comment 12
+        View Post 5, Comment 12 (via useNavigateTo)
       </button>
+      <p>
+        Same path rendered as a <code>&lt;Link&gt;</code>:{" "}
+        <Link to={PATHS.POSTS.DETAILS.build({ postId: 6, commentId: 1 })}>
+          View Post 6, Comment 1
+        </Link>
+      </p>
     </div>
   );
 }

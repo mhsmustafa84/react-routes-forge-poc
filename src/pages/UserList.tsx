@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useNavigateTo } from "react-routes-forge";
 import { PATHS } from "../paths";
 
@@ -19,6 +20,11 @@ export default function UserList() {
       <button onClick={() => navigate(PATHS.USERS.EDIT.build({ id: 42 }))}>
         Edit User 42
       </button>
+      <p>
+        As <code>&lt;Link&gt;</code>s:{" "}
+        <Link to={PATHS.USERS.DETAILS.build({ id: 2 })}>View User 2</Link>,{" "}
+        <Link to={PATHS.USERS.EDIT.build({ id: 3 })}>Edit User 3</Link>
+      </p>
     </div>
   );
 }

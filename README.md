@@ -17,13 +17,17 @@ src/
 │   └── Breadcrumbs.tsx   ← getBreadcrumbs() + custom labelResolver
 ├── pages/
 │   ├── Home.tsx          ← useNavigateTo()
-│   ├── UserList.tsx      ← .build() + .paramNames
+│   ├── UserList.tsx      ← .build() + .paramNames + <Link>
 │   ├── UserDetail.tsx    ← useRouteParams + extractParamsFromPath()
 │   ├── UserEdit.tsx      ← useRouteParams (edit/:id)
-│   ├── PostList.tsx      ← .build() multi-param
+│   ├── AddUser.tsx       ← static route in a group + typed .build() with query
+│   ├── PostList.tsx      ← .build() multi-param + <Link>
 │   ├── PostDetail.tsx    ← useRouteParams + useResolvedPath() + hash
-│   ├── Search.tsx        ← build() with arrays, null-drop, strict mode, hash
+│   ├── ProductList.tsx   ← multi-param .build() rendered as <Link>s
+│   ├── ProductDetail.tsx ← useRouteParams (2 params) + isActivePath
+│   ├── Search.tsx        ← build() with arrays, null-drop, strict mode, hash, round-trip read
 │   ├── Profile.tsx       ← Optional param (:param?) demo
+│   ├── NotFound.tsx      ← catch-all `*` route
 │   └── RouteDebug.tsx    ← Live reference for every utility function
 ```
 
@@ -34,16 +38,19 @@ src/
 | Path | Page | What it demonstrates |
 |---|---|---|
 | `/` | Home | Static path, `useNavigateTo()` |
-| `/users` | UserList | `.build()`, `.paramNames` property |
+| `/users` | UserList | `.build()`, `.paramNames` property, `<Link>` with built paths |
 | `/users/:id` | UserDetail | `useRouteParams`, `extractParamsFromPath()` |
 | `/users/edit/:id` | UserEdit | `useRouteParams` with edit pattern |
-| `/users/add` | _(inline)_ | Static path + route group nesting |
-| `/posts` | PostList | Multi-param `.build()` |
+| `/users/add` | AddUser | Static path + route group nesting, typed `.build()` with query |
+| `/posts` | PostList | Multi-param `.build()` + `<Link>` |
 | `/posts/:postId/comments/:commentId` | PostDetail | `useRouteParams` (2 params), `useResolvedPath()` with query + hash |
-| `/search` | Search | `build()` standalone, array queries, null-drop, strict mode, hash |
+| `/products` | ProductList | Multi-param `.build({ category, productId })` rendered as `<Link>`s |
+| `/products/:category/:productId` | ProductDetail | `useRouteParams` (2 params), `extractParamsFromPath()`, `isActivePath()` |
+| `/search` | Search | `build()` standalone, array queries, null-drop, strict mode, hash, round-trip read-back |
 | `/profile` | Profile | Optional `:param?` — no section defaults |
 | `/profile/:section?` | Profile | Optional param matched, `.build()` with section |
 | `/debug` | RouteDebug | **Live reference** for every export |
+| `*` | NotFound | Catch-all — no matching `PATHS` entry |
 
 ---
 
@@ -149,6 +156,14 @@ navigate(PATHS.HOME);                              // static → '/'
 navigate(PATHS.USERS.EDIT.build({ id: 42 }));      // dynamic → '/users/edit/42'
 navigate(PATHS.PROFILE.DETAILS.build({ section: "settings" })); // optional → '/profile/settings'
 navigate(PATHS.PROFILE.DETAILS.build({}));          // optional → '/profile'
+```
+
+Built paths drop straight into react-router `<Link>`s (see `ProductList`):
+
+```tsx
+<Link to={PATHS.PRODUCTS.DETAILS.build({ category: "books", productId: 3 })}>
+  The TypeScript Handbook
+</Link>
 ```
 
 ### 4. Extract params from the URL

@@ -5,11 +5,15 @@ import Home from "./pages/Home";
 import UserList from "./pages/UserList";
 import UserDetail from "./pages/UserDetail";
 import UserEdit from "./pages/UserEdit";
+import AddUser from "./pages/AddUser";
 import PostList from "./pages/PostList";
 import PostDetail from "./pages/PostDetail";
+import ProductList from "./pages/ProductList";
+import ProductDetail from "./pages/ProductDetail";
 import Search from "./pages/Search";
 import RouteDebug from "./pages/RouteDebug";
 import Profile from "./pages/Profile";
+import NotFound from "./pages/NotFound";
 import Breadcrumbs from "./components/Breadcrumbs";
 import "./App.css";
 
@@ -32,6 +36,7 @@ function NavBar() {
       {link("Home", PATHS.HOME)}
       {link("Users", PATHS.USERS.ROOT)}
       {link("Posts", PATHS.POSTS.ROOT)}
+      {link("Products", PATHS.PRODUCTS.ROOT)}
       {link("Search", PATHS.SEARCH)}
       {link("Profile", PATHS.PROFILE.ROOT)}
       {link("Debug", PATHS.DEBUG)}
@@ -48,15 +53,18 @@ function App() {
         <Routes>
           <Route path={PATHS.HOME} element={<Home />} />
           <Route path={PATHS.USERS.ROOT} element={<UserList />} />
-          <Route path={PATHS.USERS.ADD} element={<div>Add User</div>} />
+          <Route path={PATHS.USERS.ADD} element={<AddUser />} />
           <Route path={PATHS.USERS.DETAILS} element={<UserDetail />} />
           <Route path={PATHS.USERS.EDIT} element={<UserEdit />} />
           <Route path={PATHS.POSTS.ROOT} element={<PostList />} />
           <Route path={PATHS.POSTS.DETAILS} element={<PostDetail />} />
+          <Route path={PATHS.PRODUCTS.ROOT} element={<ProductList />} />
+          <Route path={PATHS.PRODUCTS.DETAILS} element={<ProductDetail />} />
           <Route path={PATHS.SEARCH} element={<Search />} />
           <Route path={PATHS.PROFILE.ROOT} element={<Profile />} />
           <Route path={PATHS.PROFILE.DETAILS} element={<Profile />} />
           <Route path={PATHS.DEBUG} element={<RouteDebug />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </div>

@@ -1,10 +1,11 @@
 import { build, isActivePath, useNavigateTo } from "react-routes-forge";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { PATHS } from "../paths";
 
 export default function Search() {
   const navigate = useNavigateTo();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const isSearchActive = isActivePath(location.pathname, PATHS.SEARCH);
 
@@ -54,6 +55,24 @@ export default function Search() {
         Navigate to /users/7?tab=info#details
       </button>
 
+      <h3>Reading query params back from the URL</h3>
+      <p className="note">
+        The buttons above build query strings with <code>build()</code> and
+        navigate to them. <code>useSearchParams</code> (react-router) reads
+        them back — proving the round trip.
+      </p>
+      {searchParams.size === 0 ? (
+        <p className="note">No query params in the current URL yet.</p>
+      ) : (
+        <ul>
+          {[...searchParams.entries()].map(([key, value]) => (
+            <li key={`${key}=${value}`}>
+              <code>{key}</code> = <code>{value}</code>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button onClick={() => navigate(PATHS.SEARCH)}>Clear query params</button>
     </div>
   );
 }
