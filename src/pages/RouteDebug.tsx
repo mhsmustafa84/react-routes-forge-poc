@@ -11,6 +11,7 @@ import {
   appendQuery,
   isDynamic,
   isActivePath,
+  getBreadcrumbs,
   clearPathCache,
   devWarn,
 } from "react-routes-forge";
@@ -60,14 +61,16 @@ const DEMO_EXTRACT_PARAM_NAMES = [
   { label: 'extractParamNames("/static")', result: JSON.stringify(extractParamNames("/static")) },
 ];
 
-const DYNAMIC_TEMPLATE = PATHS.USERS.EDIT as unknown as string;
 const STRING_GOTCHAS = [
-  { label: `typeof PATHS.USERS.EDIT`, result: JSON.stringify(typeof DYNAMIC_TEMPLATE) },
-  { label: `String(PATHS.USERS.EDIT)`, result: String(DYNAMIC_TEMPLATE) },
-  { label: `\`\${PATHS.USERS.EDIT}\``, result: `${DYNAMIC_TEMPLATE}` },
-  { label: `PATHS.USERS.EDIT == "/users/edit/:id"`, result: String(DYNAMIC_TEMPLATE == "/users/edit/:id") },
-  { label: `PATHS.USERS.EDIT === "/users/edit/:id"`, result: String(DYNAMIC_TEMPLATE === "/users/edit/:id") },
-  { label: `PATHS.USERS.EDIT.valueOf()`, result: DYNAMIC_TEMPLATE.valueOf() },
+  { label: `typeof PATHS.HOME`, result: JSON.stringify(typeof PATHS.HOME) },
+  { label: `typeof PATHS.USERS.EDIT`, result: JSON.stringify(typeof PATHS.USERS.EDIT) },
+  { label: `PATHS.HOME === "/"`, result: String(PATHS.HOME === "/") },
+  { label: `PATHS.USERS.EDIT === "/users/edit/:id"`, result: String(PATHS.USERS.EDIT === "/users/edit/:id") },
+  { label: `String(PATHS.USERS.EDIT)`, result: String(PATHS.USERS.EDIT) },
+  { label: `\`\${PATHS.USERS.EDIT}\``, result: `${PATHS.USERS.EDIT}` },
+  { label: `new Map([[PATHS.HOME, "home"]]).get(PATHS.HOME)`, result: JSON.stringify(new Map([[PATHS.HOME, "home"]]).get(PATHS.HOME) ?? null) },
+  { label: `build("/foo", {}) — plain template via build()`, result: build("/foo", {}) },
+  { label: `getParamNames("/users/:id") — plain template`, result: JSON.stringify(getParamNames("/users/:id")) },
 ];
 
 const DEMO_MATCH = [
@@ -107,6 +110,14 @@ const DEMO_ACTIVE = [
   { label: 'isActivePath("/users", "/users/:id")', result: String(isActivePath("/users", "/users/:id")) },
   { label: 'isActivePath("/users", "/users/:id", { exact: false })', result: String(isActivePath("/users", "/users/:id", { exact: false })) },
   { label: 'isActivePath("/users", "/users/") (template trailing slash)', result: String(isActivePath("/users", "/users/")) },
+  { label: 'isActivePath("/users/42/posts", "/users/:id", { caseSensitive: true }) (partial opts)', result: String(isActivePath("/users/42/posts", "/users/:id", { caseSensitive: true })) },
+  { label: 'isActivePath("/users/42/posts", "/users/:id", { caseSensitive: false })', result: String(isActivePath("/users/42/posts", "/users/:id", { caseSensitive: false })) },
+];
+
+const DEMO_BREADCRUMBS = [
+  { label: 'getBreadcrumbs(PATHS, "/users/edit/42")', result: JSON.stringify(getBreadcrumbs(PATHS, "/users/edit/42")) },
+  { label: 'getBreadcrumbs(PATHS, "/posts/7/comments/99")', result: JSON.stringify(getBreadcrumbs(PATHS, "/posts/7/comments/99")) },
+  { label: 'getBreadcrumbs(PATHS, "/products/electronics/1")', result: JSON.stringify(getBreadcrumbs(PATHS, "/products/electronics/1")) },
 ];
 
 const DEMO_SUFFIX = [
@@ -276,11 +287,18 @@ export default function RouteDebug() {
       )}
 
       {section(
-        "9. String object gotcha — Dynamic routes are not primitives",
+        "9. Routes are genuine primitive strings",
         <>
           <p className="note">
-            Dynamic routes are <code>String</code> <em>objects</em> (not string primitives).
-            Use <code>==</code> or <code>String()</code> / template literal — never <code>===</code>.
+            Route values from <code>defineRoutes()</code> are plain primitive
+            strings — <code>typeof</code> is <code>"string"</code> and strict
+            equality (<code>===</code>) against the template works, so they're
+            safe as <code>Map</code> keys and can be passed straight to{" "}
+            <code>navigate()</code> / <code>&lt;Link to&gt;</code>.{" "}
+            <code>.build()</code> and <code>.paramNames</code> are attached to{" "}
+            <code>String.prototype</code> at runtime, so the standalone{" "}
+            <code>build()</code> / <code>getParamNames()</code> helpers work on
+            any plain template string too.
           </p>
           <table className="debug-table">
             <thead><tr><th>Expression</th><th>Result</th></tr></thead>
@@ -385,14 +403,22 @@ export default function RouteDebug() {
 
       {section(
         "15. isActivePath() — NavLink-style matching (case-insensitive, trailing slash)",
-        <table className="debug-table">
-          <thead><tr><th>Call</th><th>Result</th></tr></thead>
-          <tbody>
-            {DEMO_ACTIVE.map((d) => (
-              <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
-            ))}
-          </tbody>
-        </table>,
+        <>
+          <p className="note">
+            Options are defaulted individually, so a partial options object
+            (e.g. only <code>{"{ caseSensitive: true }"}</code>) keeps the
+            documented <code>exact: true</code> default instead of silently
+            falling back to prefix matching.
+          </p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_ACTIVE.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
+            </tbody>
+          </table>
+        </>,
       )}
 
       {section(
@@ -431,9 +457,10 @@ export default function RouteDebug() {
         <>
           <p className="note">
             Every route gets a <code>.build()</code> helper. Static routes take
-            a query object (no params); dynamic routes take params. Both are{" "}
-            <code>String</code> objects, so compare with <code>==</code> or{" "}
-            <code>String()</code>.
+            a query object (no params); dynamic routes take params. Both are
+            genuine primitive strings, so strict equality works and they can be{" "}
+            passed directly to <code>navigate()</code> / <code>&lt;Link to&gt;</code>.
+            See section 9 for primitive-string details.
           </p>
           <table className="debug-table">
             <thead><tr><th>Call</th><th>Result</th></tr></thead>
@@ -461,7 +488,9 @@ export default function RouteDebug() {
             <code>useResolvedPath(template, params)</code> mirrors{" "}
             <code>buildPath()</code> as a hook. See also{" "}
             <code>useActivePath()</code> (nav highlighting) and{" "}
-            <code>useTypedSearchParams()</code> (Search page).
+            <code>useTypedSearchParams()</code> (Search page). All hooks work
+            identically with <code>react-router-dom</code> (v6/v7) and{" "}
+            <code>react-router</code> (v6/v7).
           </p>
           <table className="debug-table">
             <thead><tr><th>Call</th><th>Result</th></tr></thead>
@@ -472,6 +501,27 @@ export default function RouteDebug() {
                 </td>
                 <td><code>{resolvedExample}</code></td>
               </tr>
+            </tbody>
+          </table>
+        </>,
+      )}
+
+      {section(
+        "20. getBreadcrumbs() — depth-ordered breadcrumb trail",
+        <>
+          <p className="note">
+            <code>getBreadcrumbs()</code> walks the <code>PATHS</code> tree and
+            returns every ancestor of the current path, sorted by route depth
+            (segment count — not string length) so the most general crumb comes
+            first and the current page is last. The header breadcrumb bar uses
+            the same helper with a custom <code>labelResolver</code>.
+          </p>
+          <table className="debug-table">
+            <thead><tr><th>Call</th><th>Result</th></tr></thead>
+            <tbody>
+              {DEMO_BREADCRUMBS.map((d) => (
+                <tr key={d.label}><td><code>{d.label}</code></td><td><code>{d.result}</code></td></tr>
+              ))}
             </tbody>
           </table>
         </>,

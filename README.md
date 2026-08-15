@@ -75,7 +75,7 @@ src/
 | `joinPaths(...segments)` | `RouteDebug` | Joins and normalizes path segments |
 | `getParamNames(template)` | `RouteDebug` | Lists `:param` names from a template string |
 | `flattenRoutes(routes)` | `RouteDebug` | Walks the PATHS tree → flat array (sitemaps, duplicate detection) |
-| `getBreadcrumbs(routes, path, opts?)` | `Breadcrumbs` component | Generates breadcrumb trail with resolved params (supports `labels` map) |
+| `getBreadcrumbs(routes, path, opts?)` | `Breadcrumbs` component, `RouteDebug` | Generates depth-ordered breadcrumb trail with resolved params (supports `labels` map) |
 | `matchPath(template)` | `RouteDebug` | Converts a template into an anchored RegExp |
 | `isDynamic(path)` | `RouteDebug` | Returns `true` if the path contains any `:param` or `/*` splat |
 | `appendQuery(path, query?, hash?)` | `RouteDebug` | Appends query params / hash to an existing path, preserving current ones |
@@ -89,6 +89,8 @@ src/
 | `useRouteParams<T>()` / `useRouteParams(route)` | Every detail page | Typed `useParams` — pass a template generic **or** a route from `PATHS` for inference |
 | `useNavigateTo()` | Almost every page + `App.tsx` nav | Typed `useNavigate` — accepts resolved path + `{ replace, state }` |
 | `useResolvedPath(template, params, query?, opts?)` | `PostDetail` | Resolves a path without navigating (supports splat/optional params via `generatePath`) |
+
+The hooks live in a separate `react-routes-forge/hooks` entry so the core package never pulls in a router. They work **identically** with `react-router-dom` (v6/v7) **or** `react-router` (v6/v7) — this app uses `react-router-dom` 7, which re-exports the `react-router` core that backs the hooks.
 
 ### Advanced features
 
@@ -108,8 +110,11 @@ src/
 | **Case-insensitive `isActivePath()`** | `RouteDebug` §15 — `caseSensitive` option + trailing-slash tolerance |
 | **`RouteTree` type** | `RouteDebug` §16 — annotate a plain route map |
 | **Breadcrumb `labels` map** | `Breadcrumbs` component — overrides like `PRODUCTS.ROOT → "Shop"` |
+| **Depth-ordered breadcrumbs** | `Breadcrumbs`, `RouteDebug` §20 — crumbs sorted by route depth (segment count), not string length |
+| **Router-agnostic hooks** | everywhere — the hooks entry works identically with `react-router-dom` (v6/v7) and `react-router` (v6/v7) |
+| **Partial `isActivePath()` options** | `RouteDebug` §15 — passing only `{ caseSensitive: true }` keeps the `exact: true` default |
 | **Route validation** | `paths.ts` — `defineRoutes()` warns on missing `/`, invalid params, duplicate paths (dev only) |
-| **String object gotcha** | `RouteDebug` §9 — `===` fails, `==` / `${}` / `String()` work |
+| **Routes are primitive strings** | `RouteDebug` §9 — `typeof` is `"string"`, `===` works, usable as `Map` keys / `<Link to>` directly |
 | **Custom labelResolver** | `Breadcrumbs` component — `BreadcrumbOptions.labelResolver` |
 
 ---
@@ -126,9 +131,11 @@ The **Debug** page at [`/debug`](http://localhost:5173/debug) is a live, interac
 6. `isDynamic()` — static, dynamic, and optional-param paths
 7. `buildPath()` — core builder with strict mode and optional params
 8. `extractParamNames()` — including `:param?` optional syntax
-9. String object gotcha — `typeof`, `===` vs `==`, coercion
+9. Routes are genuine primitive strings — `typeof`, `===`, `Map` keys, `String.prototype` `.build()`
 10. `.paramNames` across every dynamic route in the app
 11. `build()` — array queries, null-drop, strict mode, hash fragments
+12. `isActivePath()` — partial options keep the `exact: true` default
+13. `getBreadcrumbs()` — depth-ordered breadcrumb trail for live routes
 
 Open it and click around — every result updates with the app's actual routes.
 
@@ -257,6 +264,7 @@ Open `http://localhost:5173` and browse the pages. The nav bar highlights the ac
 
 - [React](https://react.dev) 19
 - [Vite](https://vitejs.dev) 8
-- [react-routes-forge](https://www.npmjs.com/package/react-routes-forge) 1.2
+- [react-routes-forge](https://www.npmjs.com/package/react-routes-forge) 1.4.2
+- [react-router](https://reactrouter.com) 7 (core — backs the hooks)
 - [react-router-dom](https://reactrouter.com) 7
 - [TypeScript](https://www.typescriptlang.org) 6
