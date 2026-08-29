@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import { useNavigateTo, useActivePath } from "react-routes-forge/hooks";
 import { PATHS } from "./paths";
@@ -19,18 +20,34 @@ import NotFound from "./pages/NotFound";
 import Breadcrumbs from "./components/Breadcrumbs";
 import "./App.css";
 
-function NavButton({ label, path }: { label: string; path: string }) {
+function NavButton({
+  label,
+  path,
+  onNavigate,
+}: {
+  label: string;
+  path: string;
+  onNavigate?: () => void;
+}) {
   const navigate = useNavigateTo();
-  const active = useActivePath(path, { exact: false });
+  const active = useActivePath(path, { exact: true });
 
   return (
-    <button className={active ? "active" : ""} onClick={() => navigate(path)}>
+    <button
+      className={active ? "active" : ""}
+      onClick={() => {
+        navigate(path);
+        onNavigate?.();
+      }}
+    >
       {label}
     </button>
   );
 }
 
 function NavBar() {
+  const [open, setOpen] = useState(false);
+
   const items: [string, string][] = [
     ["Home", PATHS.HOME],
     ["Users", PATHS.USERS.ROOT],
@@ -42,12 +59,31 @@ function NavBar() {
     ["Debug", PATHS.DEBUG],
   ];
 
+  const close = () => setOpen(false);
+
   return (
-    <nav className="navbar" aria-label="Primary">
-      {items.map(([label, path]) => (
-        <NavButton key={path} label={label} path={path} />
-      ))}
-    </nav>
+    <div className="nav-wrapper">
+      <button
+        className="nav-toggle"
+        aria-label="Toggle navigation"
+        aria-expanded={open}
+        aria-controls="nav-menu"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="nav-toggle-bar" />
+        <span className="nav-toggle-bar" />
+        <span className="nav-toggle-bar" />
+      </button>
+      <nav
+        id="nav-menu"
+        className={`navbar${open ? " navbar--open" : ""}`}
+        aria-label="Primary"
+      >
+        {items.map(([label, path]) => (
+          <NavButton key={path} label={label} path={path} onNavigate={close} />
+        ))}
+      </nav>
+    </div>
   );
 }
 

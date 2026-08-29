@@ -89,7 +89,6 @@ html {
 
 body {
   margin: 0;
-  min-height: 100svh;
   background:
     radial-gradient(1100px 600px at 85% -10%, var(--bg-grad-b), transparent 60%),
     radial-gradient(900px 520px at -10% 5%, var(--bg-grad-a), transparent 55%),
@@ -98,7 +97,6 @@ body {
 }
 
 #root {
-  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
