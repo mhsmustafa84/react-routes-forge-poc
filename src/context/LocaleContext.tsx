@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 type LocaleContextType = {
@@ -27,7 +27,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     if (newLocale === locale) return;
 
     let newPathname = location.pathname;
-    
+
     if (locale) {
       newPathname = newPathname.replace(`/${locale}`, "") || "/";
     }
@@ -35,19 +35,21 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     if (newLocale) {
       newPathname = `/${newLocale}${newPathname === "/" ? "" : newPathname}`;
     }
-    
+
     navigate(
       {
         pathname: newPathname,
         search: location.search,
         hash: location.hash,
       },
-      { replace: true }
+      { replace: true },
     );
   };
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, supportedLocales: SUPPORTED_LOCALES }}>
+    <LocaleContext.Provider
+      value={{ locale, setLocale, supportedLocales: SUPPORTED_LOCALES }}
+    >
       {children}
     </LocaleContext.Provider>
   );
