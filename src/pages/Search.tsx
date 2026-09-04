@@ -4,6 +4,7 @@ import type { QueryParams } from "react-routes-forge";
 import { useNavigateTo, useTypedSearchParams } from "react-routes-forge/hooks";
 import { useLocation } from "react-router-dom";
 import { PATHS } from "../paths";
+import { useLocale } from "../context/LocaleContext";
 
 const TAG_OPTIONS = ["react", "typescript", "security", "admin", "moderator"];
 
@@ -28,6 +29,7 @@ export default function Search() {
   const [tags, setTags] = useState<string[]>(["react"]);
   const [sort, setSort] = useState("");
   const [active, setActive] = useState(false);
+  const { locale } = useLocale();
 
   useEffect(() => {
     const c = extractQueryFromPath(location.search, { coerceBooleans: true });
@@ -44,9 +46,15 @@ export default function Search() {
     sort: sort || undefined,
     active: active || undefined,
   };
-  const url = build(PATHS.SEARCH, {}, params);
+  const url = build(PATHS.SEARCH, {}, params, locale ? { locale } : undefined);
 
-  const isSearchActive = isActivePath(location.pathname, PATHS.SEARCH);
+  const localeMatch = location.pathname.match(/^\/([a-z]{2}(?:-[a-z]{2})?)(?=\/|$)/i);
+  const pathLocale = localeMatch ? localeMatch[1] : undefined;
+  const strippedPath = pathLocale 
+    ? location.pathname.replace(`/${pathLocale}`, '') || '/' 
+    : location.pathname;
+
+  const isSearchActive = isActivePath(strippedPath, PATHS.SEARCH);
   const parsed = extractQueryFromPath(location.search);
   const parsedCoerced = extractQueryFromPath(location.search, {
     coerceBooleans: true,
@@ -130,6 +138,30 @@ export default function Search() {
         ),
     },
     {
+      title: "Deep nested object (bracket notation)",
+      code: `build(PATHS.SEARCH, {}, { filter: { category: "react", minStars: 5 }, page: 1 })`,
+      result: build(
+        PATHS.SEARCH,
+        {},
+        { filter: { category: "react", minStars: 5 }, page: 1 },
+      ),
+      run: () =>
+        navigate(
+          build(
+            PATHS.SEARCH,
+            {},
+            { filter: { category: "react", minStars: 5 }, page: 1 },
+          ),
+        ),
+    },
+    {
+      title: "Locale prefix option",
+      code: `build(PATHS.SEARCH, {}, { q: "forge" }, { locale: "es" })`,
+      result: build(PATHS.SEARCH, {}, { q: "forge" }, { locale: "es" }),
+      run: () =>
+        navigate(build(PATHS.SEARCH, {}, { q: "forge" }, { locale: "es" })),
+    },
+    {
       title: "Strict mode",
       code: `build("/users/:id", {}, undefined, { strict: true })`,
       result: "throws RangeError",
@@ -199,10 +231,29 @@ export default function Search() {
         <button onClick={clear}>Clear query params</button>
         <button
           onClick={() =>
-            setTypedQuery({ q: "typed", page: 2, active: true }, { replace: true })
+            setTypedQuery(
+              { q: "typed", page: 2, active: true },
+              { replace: true },
+            )
           }
         >
           setTypedQuery(&#123; q: "typed", page: 2, active: true &#125;)
+        </button>
+        <button
+          onClick={() =>
+            setTypedQuery(
+              {
+                q: "nested",
+                page: 1,
+                active: true,
+                filter: { category: "typescript", rating: 5 },
+              },
+              { replace: true },
+            )
+          }
+        >
+          setTypedQuery(&#123; filter: &#123; category: "typescript", rating: 5
+          &#125; &#125;)
         </button>
       </section>
 
@@ -234,7 +285,10 @@ export default function Search() {
             </tr>
             <tr>
               <td>
-                <code>extractQueryFromPath(location.search, &#123; coerceBooleans: true &#125;)</code>
+                <code>
+                  extractQueryFromPath(location.search, &#123; coerceBooleans:
+                  true &#125;)
+                </code>
               </td>
               <td>
                 <code>{JSON.stringify(parsedCoerced)}</code>
@@ -242,7 +296,10 @@ export default function Search() {
             </tr>
             <tr>
               <td>
-                <code>extractQueryFromPath(location.search, &#123; coerceBooleans: true, coerceNumbers: true &#125;)</code>
+                <code>
+                  extractQueryFromPath(location.search, &#123; coerceBooleans:
+                  true, coerceNumbers: true &#125;)
+                </code>
               </td>
               <td>
                 <code>{JSON.stringify(parsedTyped)}</code>
@@ -250,7 +307,10 @@ export default function Search() {
             </tr>
             <tr>
               <td>
-                <code>useTypedSearchParams(&#123; coerceBooleans: true, coerceNumbers: true &#125;)[0]</code>
+                <code>
+                  useTypedSearchParams(&#123; coerceBooleans: true,
+                  coerceNumbers: true &#125;)[0]
+                </code>
               </td>
               <td>
                 <code>{JSON.stringify(typedQuery)}</code>

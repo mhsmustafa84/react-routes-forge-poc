@@ -25,6 +25,10 @@ export default function UserList() {
         <Link to={PATHS.USERS.DETAILS.build({ id: 2 })}>View User 2</Link>,{" "}
         <Link to={PATHS.USERS.EDIT.build({ id: 3 })}>Edit User 3</Link>
       </p>
+      <p>
+        Relative builder (<code>.buildRelative()</code>):{" "}
+        <code>{PATHS.USERS.EDIT.buildRelative({ id: 42 })}</code>
+      </p>
     </div>
   );
 }

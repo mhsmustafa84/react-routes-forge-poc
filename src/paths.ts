@@ -4,6 +4,8 @@ export const PATHS = defineRoutes({
   HOME: "/",
   USERS: {
     ROOT: "/users",
+    // Note: static routes (/users/add) MUST be placed before dynamic routes (/users/:id)
+    // to prevent shadowing warnings in development mode.
     ADD: "/users/add",
     EDIT: "/users/edit/:id",
     DETAILS: "/users/:id",
@@ -14,6 +16,7 @@ export const PATHS = defineRoutes({
   },
   SEARCH: "/search",
   DEBUG: "/debug",
+  NEXT: "/next",
   FILES: {
     ROOT: "/files",
     /** Splat route — captures the rest of the path (including `/`) into `*`. */

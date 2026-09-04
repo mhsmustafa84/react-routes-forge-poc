@@ -1,8 +1,9 @@
-import { getBreadcrumbs } from "react-routes-forge";
+import { getBreadcrumbs, build } from "react-routes-forge";
 import type { BreadcrumbOptions } from "react-routes-forge";
 import { useLocation } from "react-router-dom";
 import { useNavigateTo } from "react-routes-forge/hooks";
 import { PATHS } from "../paths";
+import { useLocale } from "../context/LocaleContext";
 
 const labelOptions: BreadcrumbOptions = {
   labels: {
@@ -23,24 +24,32 @@ const labelOptions: BreadcrumbOptions = {
 export default function Breadcrumbs() {
   const location = useLocation();
   const navigate = useNavigateTo();
-  const crumbs = getBreadcrumbs(PATHS, location.pathname, labelOptions);
+  const { locale } = useLocale();
+  
+  const strippedPath = locale 
+    ? location.pathname.replace(`/${locale}`, '') || '/' 
+    : location.pathname;
+
+  const crumbs = getBreadcrumbs(PATHS, strippedPath, labelOptions);
 
   if (crumbs.length <= 1) return null;
 
   return (
     <nav className="breadcrumbs" aria-label="breadcrumb">
-      {crumbs.map((crumb, i) => (
-        <span key={crumb.key}>
-          {i > 0 && <span className="sep">/</span>}
-          {crumb.isCurrent ? (
-            <span className="current">{crumb.label}</span>
-          ) : (
-            <button className="crumb-link" onClick={() => navigate(crumb.path)}>
-              {crumb.label}
-            </button>
-          )}
-        </span>
-      ))}
+      {crumbs.map((crumb, i) => {
+        return (
+          <span key={crumb.key}>
+            {i > 0 && <span className="sep">/</span>}
+            {crumb.isCurrent ? (
+              <span className="current">{crumb.label}</span>
+            ) : (
+              <button className="crumb-link" onClick={() => navigate(build(crumb.path as any, {}, undefined, { locale }))}>
+                {crumb.label}
+              </button>
+            )}
+          </span>
+        );
+      })}
     </nav>
   );
 }

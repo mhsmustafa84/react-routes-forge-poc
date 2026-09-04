@@ -17,7 +17,7 @@
     "react-dom": "^19.2.7",
     "react-router": "^7.18.1",
     "react-router-dom": "^7.18.1",
-    "react-routes-forge": "^1.4.2"
+    "react-routes-forge": "^1.6.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",

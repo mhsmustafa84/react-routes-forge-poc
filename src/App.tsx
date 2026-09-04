@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { useNavigateTo, useActivePath } from "react-routes-forge/hooks";
 import { PATHS } from "./paths";
@@ -16,9 +16,13 @@ import FileDetail from "./pages/FileDetail";
 import Search from "./pages/Search";
 import RouteDebug from "./pages/RouteDebug";
 import Profile from "./pages/Profile";
+import NextDemo from "./pages/NextDemo";
 import NotFound from "./pages/NotFound";
 import Breadcrumbs from "./components/Breadcrumbs";
 import "./App.css";
+import { useLocation } from "react-router";
+import { isActivePath, build } from "react-routes-forge";
+import { useLocale } from "./context/LocaleContext";
 
 function NavButton({
   label,
@@ -30,13 +34,23 @@ function NavButton({
   onNavigate?: () => void;
 }) {
   const navigate = useNavigateTo();
-  const active = useActivePath(path, { exact: true });
+  const location = useLocation();
+  const { locale } = useLocale();
+
+  // Stripped path for active check
+  const strippedPath = locale
+    ? location.pathname.replace(`/${locale}`, "") || "/"
+    : location.pathname;
+
+  const active =
+    useActivePath(path, { exact: true }) ||
+    isActivePath(strippedPath, path, { exact: true });
 
   return (
     <button
       className={active ? "active" : ""}
       onClick={() => {
-        navigate(path);
+        navigate(build(path as any, {}, undefined, { locale }));
         onNavigate?.();
       }}
     >
@@ -56,6 +70,7 @@ function NavBar() {
     ["Files", PATHS.FILES.ROOT],
     ["Search", PATHS.SEARCH],
     ["Profile", PATHS.PROFILE.ROOT],
+    ["Next.js", PATHS.NEXT],
     ["Debug", PATHS.DEBUG],
   ];
 
@@ -87,6 +102,79 @@ function NavBar() {
   );
 }
 
+function LocaleSwitcher() {
+  const { locale, setLocale, supportedLocales } = useLocale();
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const activeLocale = locale || "en";
+  const localeLabels: Record<string, string> = {
+    en: "English",
+    es: "Español",
+    fr: "Français",
+  };
+
+  const handleSelect = (loc: string) => {
+    setLocale(loc === "en" ? undefined : loc);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="locale-switcher" ref={menuRef}>
+      <button
+        className="locale-switcher-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Switch language"
+        aria-expanded={isOpen}
+      >
+        <span className="locale-icon">🌍</span>
+        <span className="locale-label">
+          {localeLabels[activeLocale] || activeLocale.toUpperCase()}
+        </span>
+        <svg
+          className={`locale-chevron ${isOpen ? "open" : ""}`}
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="locale-menu">
+          {supportedLocales.map((loc) => (
+            <button
+              key={loc}
+              className={`locale-option ${activeLocale === loc ? "active" : ""}`}
+              onClick={() => handleSelect(loc)}
+            >
+              {localeLabels[loc] || loc.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   return (
     <div className="app">
@@ -100,29 +188,15 @@ function App() {
             <span className="brand-tag">Type-safe routes · POC playground</span>
           </div>
         </div>
-        <NavBar />
+        <div className="header-actions">
+          <LocaleSwitcher />
+          <NavBar />
+        </div>
       </header>
       <div className="app-body">
         <Breadcrumbs />
         <main>
-          <Routes>
-            <Route path={PATHS.HOME} element={<Home />} />
-            <Route path={PATHS.USERS.ROOT} element={<UserList />} />
-            <Route path={PATHS.USERS.ADD} element={<AddUser />} />
-            <Route path={PATHS.USERS.DETAILS} element={<UserDetail />} />
-            <Route path={PATHS.USERS.EDIT} element={<UserEdit />} />
-            <Route path={PATHS.POSTS.ROOT} element={<PostList />} />
-            <Route path={PATHS.POSTS.DETAILS} element={<PostDetail />} />
-            <Route path={PATHS.PRODUCTS.ROOT} element={<ProductList />} />
-            <Route path={PATHS.PRODUCTS.DETAILS} element={<ProductDetail />} />
-            <Route path={PATHS.FILES.ROOT} element={<FileList />} />
-            <Route path={PATHS.FILES.DETAILS} element={<FileDetail />} />
-            <Route path={PATHS.SEARCH} element={<Search />} />
-            <Route path={PATHS.PROFILE.ROOT} element={<Profile />} />
-            <Route path={PATHS.PROFILE.DETAILS} element={<Profile />} />
-            <Route path={PATHS.DEBUG} element={<RouteDebug />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </main>
         <footer className="app-footer">
           Built with <code>react-routes-forge</code> ·{" "}
@@ -132,6 +206,38 @@ function App() {
         </footer>
       </div>
     </div>
+  );
+}
+
+function AppRoutes() {
+  const { locale } = useLocale();
+
+  const p = (path: string) => {
+    if (!locale) return path;
+    if (path === "/") return `/${locale}`;
+    return `/${locale}${path}`;
+  };
+
+  return (
+    <Routes>
+      <Route path={p(PATHS.HOME)} element={<Home />} />
+      <Route path={p(PATHS.USERS.ROOT)} element={<UserList />} />
+      <Route path={p(PATHS.USERS.ADD)} element={<AddUser />} />
+      <Route path={p(PATHS.USERS.DETAILS)} element={<UserDetail />} />
+      <Route path={p(PATHS.USERS.EDIT)} element={<UserEdit />} />
+      <Route path={p(PATHS.POSTS.ROOT)} element={<PostList />} />
+      <Route path={p(PATHS.POSTS.DETAILS)} element={<PostDetail />} />
+      <Route path={p(PATHS.PRODUCTS.ROOT)} element={<ProductList />} />
+      <Route path={p(PATHS.PRODUCTS.DETAILS)} element={<ProductDetail />} />
+      <Route path={p(PATHS.FILES.ROOT)} element={<FileList />} />
+      <Route path={p(PATHS.FILES.DETAILS)} element={<FileDetail />} />
+      <Route path={p(PATHS.SEARCH)} element={<Search />} />
+      <Route path={p(PATHS.PROFILE.ROOT)} element={<Profile />} />
+      <Route path={p(PATHS.PROFILE.DETAILS)} element={<Profile />} />
+      <Route path={p(PATHS.NEXT)} element={<NextDemo />} />
+      <Route path={p(PATHS.DEBUG)} element={<RouteDebug />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

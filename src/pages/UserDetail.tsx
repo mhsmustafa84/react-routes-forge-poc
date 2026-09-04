@@ -21,6 +21,9 @@ export default function UserDetail() {
       >
         Edit
       </button>
+      <p>
+        Relative edit path: <code>{PATHS.USERS.EDIT.buildRelative({ id: Number(id) })}</code>
+      </p>
       <br />
       <button onClick={() => navigateTo(PATHS.USERS.ROOT)}>
         Back to Users

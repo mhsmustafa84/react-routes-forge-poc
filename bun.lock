@@ -9,7 +9,7 @@
         "react-dom": "^19.2.7",
         "react-router": "^7.18.1",
         "react-router-dom": "^7.18.1",
-        "react-routes-forge": "^1.4.2",
+        "react-routes-forge": "^1.6.0",
       },
       "devDependencies": {
         "@types/node": "^24.13.2",
@@ -232,7 +232,7 @@
 
     "react-router-dom": ["react-router-dom@7.18.2", "", { "dependencies": { "react-router": "7.18.2" }, "peerDependencies": { "react": ">=18", "react-dom": ">=18" } }, "sha512-AIKJ/jgGlFb3EbfCXk5Gzshiwt+l3mqbCrNjmEWMMjqQxNJ3svBa6bgzFyCC2Sw3RA0VWF1kg3uQf2OFhxb8hw=="],
 
-    "react-routes-forge": ["react-routes-forge@1.4.2", "", { "peerDependencies": { "react": ">=17", "react-router": ">=6", "react-router-dom": ">=6" }, "optionalPeers": ["react-router", "react-router-dom"] }, "sha512-auHE8WxMU0UUrIwmtElGNqIoqkSBWvCAHjv558berEPDJAUlz8Vzga7s7hhhnX4Gk207debcyilf7PqlIplSRw=="],
+    "react-routes-forge": ["react-routes-forge@1.6.0", "", { "peerDependencies": { "next": "", "react": ">=17", "react-router": ">=6", "react-router-dom": ">=6" }, "optionalPeers": ["next", "react-router", "react-router-dom"] }, "sha512-qMFW8Sig1gciAgZ6skfUQAiNFqNh8bIfH83DtiDsFcSeFtWGd5G6wy7uApe5r/QmCeR92ftSeD3HUnKYdfMISw=="],
 
     "reusify": ["reusify@1.1.0", "", {}, "sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw=="],
 
